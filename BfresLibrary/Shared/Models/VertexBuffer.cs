@@ -90,18 +90,19 @@ namespace BfresLibrary
 
         internal uint Flags;
 
-        public Vector4F[] GetPositions()
+        public Vector4F[] GetPositions(ResFile resFile)
         {
-            VertexBufferHelper helper = new VertexBufferHelper(this, ByteOrder.LittleEndian);
+            VertexBufferHelper helper = new VertexBufferHelper(this, resFile.ByteOrder);
             var positions = helper.Attributes.FirstOrDefault(x => x.Name == "_p0");
             return positions != null ? positions.Data : new Vector4F[0]; 
         }
 
-        public Vector4F[] GetBoneIndices()
+        public Vector4F[] GetBoneIndices(ResFile resFile)
         {
-            VertexBufferHelper helper = new VertexBufferHelper(this, ByteOrder.LittleEndian);
-            var positions = helper.Attributes.FirstOrDefault(x => x.Name == "_i0");
-            return positions != null ? positions.Data : new Vector4F[0];
+            VertexBufferHelper helper = new VertexBufferHelper(this, resFile.ByteOrder);
+            var attr = helper.Attributes.FirstOrDefault(x => x.Name == "_i0");
+
+            return attr != null ? attr.Data : new Vector4F[0];
         }
 
         // ---- METHODS ------------------------------------------------------------------------------------------------

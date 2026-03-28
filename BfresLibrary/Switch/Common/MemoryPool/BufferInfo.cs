@@ -21,10 +21,11 @@ namespace BfresLibrary
             {
                 foreach (Shape shp in fmdl.Shapes.Values)
                 {
+                    uint align = fmdl.VertexBuffers[shp.VertexBufferIndex].GPUBufferAlignent;
                     foreach (Mesh msh in shp.Meshes)
                     {
                         Size += (uint)msh.Data.Length;
-                        if (Size % 8 != 0) Size = Size + (8 - (Size % 8));
+                        if (Size % align != 0) Size = Size + (align - (Size % align));
                     }
                 }
             }
@@ -38,9 +39,10 @@ namespace BfresLibrary
             foreach (Model fmdl in saver.ResFile.Models.Values)
             {
                 foreach (VertexBuffer vtx in fmdl.VertexBuffers) {
+                    uint align = vtx.GPUBufferAlignent;
                     foreach (Buffer buff in vtx.Buffers) {
                         Size += (uint)buff.Data[0].Length;
-                        if (Size % 8 != 0) Size = Size + (8 - (Size % 8));
+                        if (Size % align != 0) Size = Size + (align - (Size % align));
                     }
                 }
             }

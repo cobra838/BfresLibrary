@@ -14,7 +14,7 @@ namespace BfresLibrary.Switch
     {
         public static void Load(ResFileSwitchLoader loader, VertexBuffer vertexBuffer)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
                 vertexBuffer.Flags = loader.ReadUInt32();
             else
                 loader.LoadHeaderBlock();
@@ -22,7 +22,7 @@ namespace BfresLibrary.Switch
             vertexBuffer.Attributes = loader.LoadDictValues<VertexAttrib>();
             vertexBuffer.MemoryPool = loader.Load<MemoryPool>();
             long unk = loader.ReadOffset();
-            if (loader.ResFile.VersionMajor2 > 2 || loader.ResFile.VersionMajor > 0)
+            if (loader.ResFile.VersionMajor > 2)
                 loader.ReadOffset();// unk2
             long VertexBufferSizeOffset = loader.ReadOffset();
             long VertexStrideSizeOffset = loader.ReadOffset();
@@ -33,7 +33,10 @@ namespace BfresLibrary.Switch
             ushort Idx = loader.ReadUInt16();
             vertexBuffer.VertexCount = loader.ReadUInt32();
             vertexBuffer.VertexSkinCount = (byte)loader.ReadUInt16();
-            vertexBuffer.GPUBufferAlignent = loader.ReadUInt16();
+            if (loader.ResFile.VersionMajor >= 10)
+                vertexBuffer.GPUBufferAlignent = loader.ReadUInt16();
+            else
+                loader.ReadUInt16(); // padding
 
             //Buffers use the index buffer offset from memory info section
             //This goes to a section in the memory pool which stores all the buffer data, including faces
@@ -51,7 +54,7 @@ namespace BfresLibrary.Switch
                     buffer.Data = new byte[1][];
                     buffer.Stride = (ushort)StrideArray[buff].Stride;
 
-                    loader.Align(8);
+                    loader.Align(vertexBuffer.GPUBufferAlignent);
                     buffer.Data[0] = loader.ReadBytes((int)VertexBufferSizeArray[buff].Size);
                     vertexBuffer.Buffers.Add(buffer);
                 }
@@ -60,7 +63,7 @@ namespace BfresLibrary.Switch
 
         public static void Save(ResFileSwitchSaver saver, VertexBuffer vertexBuffer)
         {
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.Write(vertexBuffer.Flags);
             else
                 saver.Seek(12);
@@ -83,8 +86,10 @@ namespace BfresLibrary.Switch
             saver.Write((ushort)saver.CurrentIndex);
             saver.Write(vertexBuffer.VertexCount);
             saver.Write((ushort)vertexBuffer.VertexSkinCount);
-            saver.Write((ushort)vertexBuffer.GPUBufferAlignent);
-
+            if (saver.ResFile.VersionMajor >= 10)
+                saver.Write((ushort)vertexBuffer.GPUBufferAlignent);
+            else
+                saver.Write((ushort)0);
         }
 
         public static uint SetVertexBufferArrayOffset(VertexBuffer vertexBuffer, ResFileSaver saver)
