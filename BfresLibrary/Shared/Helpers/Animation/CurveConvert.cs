@@ -60,22 +60,25 @@ namespace BfresLibrary
                                 slopes[1] *= Rad2Deg;
                             }
 
-                            convCurve.KeyFrames.Add(frame, new HermiteKey()
-                            {
-                                Value = coef0,
-                                In = slopes[0],
-                                Out = slopes[1],
-                            });
+                            if (!convCurve.KeyFrames.ContainsKey(frame))
+                                convCurve.KeyFrames.Add(frame, new HermiteKey()
+                                {
+                                    Value = coef0,
+                                    In = slopes[0],
+                                    Out = slopes[1],
+                                });
                         }
                         break;
                     case AnimCurveType.StepBool:
-                        convCurve.KeyFrames.Add(frame, new BooleanKey()
+                        if (!convCurve.KeyFrames.ContainsKey(frame))
+                            convCurve.KeyFrames.Add(frame, new BooleanKey()
                         {
                             Value = curve.KeyStepBoolData[i],
                         });
                         break;
                     case AnimCurveType.StepInt:
-                        convCurve.KeyFrames.Add(frame, new KeyFrame()
+                        if (!convCurve.KeyFrames.ContainsKey(frame))
+                            convCurve.KeyFrames.Add(frame, new KeyFrame()
                         {
                             Value = (int)curve.Keys[i, 0] + (int)curve.Offset
                         });
@@ -86,7 +89,8 @@ namespace BfresLibrary
                             if (useDegrees)
                                 value *= Rad2Deg;
 
-                            convCurve.KeyFrames.Add(frame, new LinearKeyFrame()
+                            if (!convCurve.KeyFrames.ContainsKey(frame))
+                                convCurve.KeyFrames.Add(frame, new LinearKeyFrame()
                             {
                                 Value = value,
                                 Delta = curve.Keys[i, 1] * valueScale,
@@ -99,7 +103,8 @@ namespace BfresLibrary
                             if (useDegrees)
                                 value *= Rad2Deg;
 
-                            convCurve.KeyFrames.Add(frame, new KeyFrame()
+                            if (!convCurve.KeyFrames.ContainsKey(frame))
+                                convCurve.KeyFrames.Add(frame, new KeyFrame()
                             {
                                 Value = value
                             });
@@ -136,7 +141,7 @@ namespace BfresLibrary
             var maxFrame = curve.Frames.Max(x => x);
             if (maxFrame > 255 && curve.FrameType == AnimCurveFrameType.Byte)
                 curve.FrameType = AnimCurveFrameType.Decimal10x5;
-            if (maxFrame > ushort.MaxValue)
+            if (maxFrame >= 1024)
                 curve.FrameType = AnimCurveFrameType.Single;
 
             for (int i = 0; i < keys.Count; i++)
