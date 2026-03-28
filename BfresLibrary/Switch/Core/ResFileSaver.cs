@@ -1792,7 +1792,10 @@ namespace BfresLibrary.Switch.Core
             SaveVertexBufferPointer();
             for (int i = 0; i < ResFile.BufferInfo.VertexBufferData.Length; i++)
             {
-                if (Position % 8 != 0) Position = Position + (8 - (Position % 8));
+                var align = ResFile.BufferInfo.VertexAlignments.Length > i ?
+                    ResFile.BufferInfo.VertexAlignments[i] : 8;
+
+                if (Position % align != 0) Position = Position + (align - (Position % align));
                 Write(ResFile.BufferInfo.VertexBufferData[i]);
             }
         }

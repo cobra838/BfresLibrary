@@ -76,23 +76,23 @@ namespace BfresLibrary
         private void SetVertexBufferData(ResFileSaver saver)
         {
             List<byte[]> VtxBuffList = new List<byte[]>();
+            List<int> VtxAlignList = new List<int>();
 
             foreach (Model fmdl in saver.ResFile.Models.Values) {
                 foreach (VertexBuffer vtx in fmdl.VertexBuffers) {
                     foreach (Buffer buff in vtx.Buffers) {
                         VtxBuffList.Add(buff.Data[0]);
+                        VtxAlignList.Add(vtx.GPUBufferAlignent);
                     }
                 }
             }
 
             //Add all buffer byte[] to a list
 
-            VertexBufferData = new byte[VtxBuffList.Count][];
+            VertexAlignments = VtxAlignList.ToArray();
+            VertexBufferData = VtxBuffList.ToArray();
 
-            for (int i = 0; i < VtxBuffList.Count; i++)
-            {
-                VertexBufferData[i] = VtxBuffList[i];
-            }
+            VtxAlignList.Clear();
             VtxBuffList.Clear();
         }
 
@@ -112,6 +112,11 @@ namespace BfresLibrary
         /// Gets or sets the buffer instance that stores vertex data
         /// </summary>
         public byte[][] IndexBufferData { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int[] VertexAlignments { get; set; }
 
         /// <summary>
         /// Gets or sets an unkown value
