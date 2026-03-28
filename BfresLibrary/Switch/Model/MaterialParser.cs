@@ -13,14 +13,14 @@ namespace BfresLibrary.Switch
     {
         public static void Load(ResFileSwitchLoader loader, Material mat)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
                 mat.Flags = loader.ReadEnum<MaterialFlags>(true);
             else
                 loader.LoadHeaderBlock();
 
             mat.Name = loader.LoadString();
 
-            if (loader.ResFile.VersionMajor2 >= 10)
+            if (loader.ResFile.VersionMajor >= 10)
             {
                 MaterialParserV10.Load(loader, mat);
                 return;
@@ -39,7 +39,7 @@ namespace BfresLibrary.Switch
             long userPointer = loader.ReadInt64();
             long SamplerSlotArrayOffset = loader.ReadInt64();
             long TexSlotArrayOffset = loader.ReadInt64();
-            if (loader.ResFile.VersionMajor2 < 9)
+            if (loader.ResFile.VersionMajor < 9)
                 mat.Flags = loader.ReadEnum<MaterialFlags>(true);
             ushort idx = loader.ReadUInt16();
             ushort numRenderInfo = loader.ReadUInt16();
@@ -51,7 +51,7 @@ namespace BfresLibrary.Switch
             ushort sizParamRaw = loader.ReadUInt16();
             ushort numUserData = loader.ReadUInt16();
 
-            if (loader.ResFile.VersionMajor2 < 9)
+            if (loader.ResFile.VersionMajor < 9)
                 loader.ReadUInt32(); //Padding
 
             var textures = loader.LoadCustom(() => loader.LoadStrings(numTextureRef), (uint)TextureNameArray);
@@ -83,12 +83,12 @@ namespace BfresLibrary.Switch
             if (mat.ShaderParamData == null)
                 mat.ShaderParamData = new byte[0];
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.Write(mat.Flags, true);
             else
                 saver.Seek(12);
 
-            if (saver.ResFile.VersionMajor2 >= 10)
+            if (saver.ResFile.VersionMajor >= 10)
             {
                 MaterialParserV10.Save(saver, mat);
                 return;
@@ -116,7 +116,7 @@ namespace BfresLibrary.Switch
             saver.SaveRelocateEntryToSection(saver.Position, 2, 1, 0, ResFileSwitchSaver.Section1, "Material texture slots");
             mat.PosSamplerSlotArrayOffset = saver.SaveOffset();
             mat.PosTextureSlotArrayOffset = saver.SaveOffset();
-            if (saver.ResFile.VersionMajor2 != 9)
+            if (saver.ResFile.VersionMajor != 9)
                 saver.Write(mat.Flags, true);
             saver.Write((ushort)saver.CurrentIndex);
             saver.Write((ushort)mat.RenderInfos.Count);
@@ -128,7 +128,7 @@ namespace BfresLibrary.Switch
             saver.Write((ushort)0); // SizParamRaw
             saver.Write((ushort)mat.UserData.Count);
 
-            if (saver.ResFile.VersionMajor2 != 9)
+            if (saver.ResFile.VersionMajor != 9)
                 saver.Write(0); // padding
         }
     }

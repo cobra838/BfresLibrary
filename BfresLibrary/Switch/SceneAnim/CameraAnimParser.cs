@@ -12,7 +12,7 @@ namespace BfresLibrary.Switch
     {
         public static void Read(ResFileSwitchLoader loader, CameraAnim cameraAnim)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 cameraAnim.Flags = loader.ReadEnum<CameraAnimFlags>(true);
                 loader.Seek(2);
@@ -25,7 +25,7 @@ namespace BfresLibrary.Switch
             cameraAnim.UserData = loader.LoadDictValues<UserData>();
 
             byte numCurve = 0;
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 cameraAnim.FrameCount = loader.ReadInt32();
                 cameraAnim.BakedSize = loader.ReadUInt32();
@@ -49,7 +49,7 @@ namespace BfresLibrary.Switch
 
         public static void Write(ResFileSwitchSaver saver, CameraAnim cameraAnim)
         {
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write(cameraAnim.Flags, true);
                 saver.Seek(2);
@@ -63,7 +63,7 @@ namespace BfresLibrary.Switch
             cameraAnim.PosBaseDataOffset = saver.SaveOffset();
             cameraAnim.PosUserDataOffset = saver.SaveOffset();
             cameraAnim.PosUserDataDictOffset = saver.SaveOffset();
-            if (saver.ResFile.VersionMajor2 == 9)
+            if (saver.ResFile.VersionMajor == 9)
             {
                 saver.Write(cameraAnim.FrameCount);
                 saver.Write(cameraAnim.BakedSize);

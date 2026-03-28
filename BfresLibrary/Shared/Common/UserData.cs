@@ -174,7 +174,7 @@ namespace BfresLibrary
                 Name = loader.LoadString();
                 uint DataOffset = loader.ReadOffset();
                 uint count = 0;
-                if (loader.ResFile.VersionMajor2 <= 2 && loader.ResFile.VersionMajor == 0)
+                if (loader.ResFile.VersionMajor <= 2)
                 {
                     char[] Reserved = loader.ReadChars(8);
                     count = loader.ReadUInt32();

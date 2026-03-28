@@ -12,7 +12,7 @@ namespace BfresLibrary.Switch
     {
         public static void Read(ResFileSwitchLoader loader, LightAnim lightAnim)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 lightAnim._flags = loader.ReadUInt16();
                 loader.ReadUInt16();
@@ -29,7 +29,7 @@ namespace BfresLibrary.Switch
 
             ushort numUserData = 0;
             byte numCurve = 0;
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 lightAnim.FrameCount = loader.ReadInt32();
                 lightAnim.BakedSize = loader.ReadUInt32();
@@ -56,7 +56,7 @@ namespace BfresLibrary.Switch
 
         public static void Write(ResFileSwitchSaver saver, LightAnim lightAnim)
         {
-            if (saver.ResFile.VersionMajor2 == 9)
+            if (saver.ResFile.VersionMajor == 9)
             {
                 saver.Write((ushort)lightAnim._flags);
                 saver.Write((ushort)0);
@@ -73,7 +73,7 @@ namespace BfresLibrary.Switch
             saver.SaveString(lightAnim.LightTypeName);
             saver.SaveString(lightAnim.DistanceAttnFuncName);
             saver.SaveString(lightAnim.AngleAttnFuncName);
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write(lightAnim.FrameCount);
                 saver.Write(lightAnim.BakedSize);

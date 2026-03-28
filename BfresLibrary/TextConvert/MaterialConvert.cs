@@ -172,13 +172,6 @@ namespace BfresLibrary.TextConvert
 
         public static List<MeshMetaInfo> FromJson(Material mat, string json)
         {
-            JsonConvert.DefaultSettings = () =>
-            {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new TexSrtConverter());
-                return settings;
-            };
-
             var matJson = JsonConvert.DeserializeObject<MaterialStruct>(json);
             mat.Name = matJson.Name;
             mat.Visible = matJson.Visible;

@@ -28,7 +28,7 @@ namespace BfresLibrary.Switch
             resFile.Name = loader.LoadString();
             long modelOffset = loader.ReadOffset();
             long modelDictOffset = loader.ReadOffset();
-            if (loader.ResFile.VersionMajor2 >= 9) {
+            if (loader.ResFile.VersionMajor >= 9) {
                 loader.ReadBytes(32); //reserved
             }
             resFile.SkeletalAnims = loader.LoadDictValues<SkeletalAnim>();
@@ -39,7 +39,7 @@ namespace BfresLibrary.Switch
             resFile.MemoryPool = loader.Load<MemoryPool>();
             resFile.BufferInfo = loader.Load<BufferInfo>();
 
-            if (loader.ResFile.VersionMajor2 >= 10)
+            if (loader.ResFile.VersionMajor >= 10)
             {
                 //Peek at external flags
                 byte PeekFlags()
@@ -89,7 +89,7 @@ namespace BfresLibrary.Switch
             //Read models after buffer data
             resFile.Models = loader.LoadDictValues<Model>(modelDictOffset, modelOffset);
 
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 //Count for 2 new sections
                 ushort unkCount = loader.ReadUInt16();
@@ -114,8 +114,10 @@ namespace BfresLibrary.Switch
             {
                 resFile.DataAlignmentOverride = 0x1000;
             }
-
+            
             resFile.Textures = new ResDict<TextureShared>();
+
+            /*
             foreach (var ext in resFile.ExternalFiles) {
                 if (ext.Key.Contains(".bntx")) 
                 {
@@ -127,7 +129,7 @@ namespace BfresLibrary.Switch
                     // Empty the data to save memory space. Bntx is resaved directly
                     ext.Value.Data = new byte[0];
                 }
-            }
+            }*/
 
             resFile.TexPatternAnims = new ResDict<MaterialAnim>();
             resFile.MatVisibilityAnims = new ResDict<MaterialAnim>();
@@ -187,7 +189,7 @@ namespace BfresLibrary.Switch
             saver.SaveRelocationTablePointerPointer();
             saver.SaveFieldFileSize();
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.SaveRelocateEntryToSection(saver.Position, 17, 1, 0, ResFileSwitchSaver.Section1, "ResFile");
             else
                 saver.SaveRelocateEntryToSection(saver.Position, 13, 1, 0, ResFileSwitchSaver.Section1, "ResFile");
@@ -197,7 +199,7 @@ namespace BfresLibrary.Switch
             resFile.ModelDictOffset = saver.SaveOffset();
 
             //2 New sections
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write(0L);
                 saver.Write(0L);
@@ -234,7 +236,7 @@ namespace BfresLibrary.Switch
             saver.Write((ushort)resFile.Models.Count);
 
             //2 New sections
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write((ushort)0);
                 saver.Write((ushort)0);
@@ -247,10 +249,10 @@ namespace BfresLibrary.Switch
             saver.Write((ushort)resFile.SceneAnims.Count);
             saver.Write((ushort)resFile.ExternalFiles.Count);
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write((byte)0); //external flags (set to 0)
-                if (saver.ResFile.VersionMajor2 >= 10)
+                if (saver.ResFile.VersionMajor >= 10)
                     saver.Write((byte)1); //saved flags
                 else
                     saver.Write((byte)0);

@@ -180,9 +180,15 @@ namespace BfresLibrary.Switch.Core
                 ((IResData)ExportableData).Save(this);
                 WriteSkeleton((Skeleton)ExportableData);
             }
+            if (ExportableData is Bone)
+            {
+                WriteHeader("fmdlSUB", "BONE\0\0\0\0");
+                WriteSignature("BONE");
+                ((IResData)ExportableData).Save(this);
+            }
             if (ExportableData is Material)
             {
-                if (ResFile.VersionMajor2 >= 10)
+                if (ResFile.VersionMajor >= 10)
                     MaterialParserV10.PrepareSave((Material)ExportableData);
 
                 WriteHeader("fmdlSUB", "FMAT\0\0\0\0");
@@ -460,7 +466,7 @@ namespace BfresLibrary.Switch.Core
             }
             if (ResFile.SkeletalAnims.Count > 0)
             {
-                if (ResFile.VersionMajor2 >= 9)
+                if (ResFile.VersionMajor >= 9)
                 {
                     SaveRelocateEntryToSection(Position + 8, 2, (uint)ResFile.SkeletalAnims.Count, 8, Section1, "Skeleton Animation");
                     SaveRelocateEntryToSection(Position + 32, 4, (uint)ResFile.SkeletalAnims.Count, 6, Section1, "Skeleton Animation");
@@ -485,7 +491,7 @@ namespace BfresLibrary.Switch.Core
             }
             if (ResFile.BoneVisibilityAnims.Count > 0)
             {
-                if (ResFile.VersionMajor2 >= 9)
+                if (ResFile.VersionMajor >= 9)
                 {
                     SaveRelocateEntryToSection(Position + 8, 2, (uint)ResFile.BoneVisibilityAnims.Count, 10, Section1, "Bone Vis Animation");
                     SaveRelocateEntryToSection(Position + 32, 6, (uint)ResFile.BoneVisibilityAnims.Count, 6, Section1, "Bone Vis Animation");
@@ -502,7 +508,7 @@ namespace BfresLibrary.Switch.Core
             }
             if (ResFile.ShapeAnims.Count > 0)
             {
-                if (ResFile.VersionMajor2 >= 9)
+                if (ResFile.VersionMajor >= 9)
                 {
                     SaveRelocateEntryToSection(Position + 8, 2, (uint)ResFile.ShapeAnims.Count, 10, Section1, "Shape Animation");
                     SaveRelocateEntryToSection(Position + 32, 6, (uint)ResFile.ShapeAnims.Count, 6, Section1, "Shape Animation");
@@ -519,7 +525,7 @@ namespace BfresLibrary.Switch.Core
             }
             if (ResFile.SceneAnims.Count > 0)
             {
-                if (ResFile.VersionMajor2 >= 9)
+                if (ResFile.VersionMajor >= 9)
                 {
                     SaveRelocateEntryToSection(Position + 8, 2, (uint)ResFile.SceneAnims.Count, 10, Section1, "Scene Animation");
                     SaveRelocateEntryToSection(Position + 32, 6, (uint)ResFile.SceneAnims.Count, 6, Section1, "Scene Animation");
@@ -540,7 +546,7 @@ namespace BfresLibrary.Switch.Core
             }
             else
             {
-                if (ResFile.VersionMajor2 != 9)
+                if (ResFile.VersionMajor != 9)
                 {
                     //Save a default buffer info with no pointer to it
                     //Idk why but this section always saves even without a pointer
@@ -786,9 +792,9 @@ namespace BfresLibrary.Switch.Core
         {
             if (mdl.Skeleton.Bones.Count > 0)
             {
-                if (ResFile.VersionMajor2 >= 10)
+                if (ResFile.VersionMajor >= 10)
                     SaveRelocateEntryToSection(Position, 3, (uint)mdl.Skeleton.Bones.Count, 8, Section1, "Bone array");
-                else if (ResFile.VersionMajor2 >= 8)
+                else if (ResFile.VersionMajor >= 8)
                     SaveRelocateEntryToSection(Position, 3, (uint)mdl.Skeleton.Bones.Count, 9, Section1, "Bone array");
                 else
                     SaveRelocateEntryToSection(Position, 3, (uint)mdl.Skeleton.Bones.Count, 7, Section1, "Bone array");
@@ -847,11 +853,11 @@ namespace BfresLibrary.Switch.Core
                 this.Write(skl.InverseModelMatrices);
             }
 
-            if (skl.userIndices?.Length > 0)
+            if (skl.MirroredBoneIndices?.Length > 0)
             {
                 Align(8);
-                WriteOffset(skl.PosUserPointer);
-                Write(skl.userIndices);
+                WriteOffset(skl.PosMirroredIndexTablePointer);
+                Write(skl.MirroredBoneIndices);
             }
 
             if (skl.Bones.Count > 0)
@@ -909,7 +915,7 @@ namespace BfresLibrary.Switch.Core
             if (shp.RadiusArray.Count > 0)
             {
                 WriteOffset(shp.PosRadiusArrayOffset);
-                if (ResFile.VersionMajor2 >= 10)
+                if (ResFile.VersionMajor >= 10)
                 {
                     foreach (var radius in shp.BoundingRadiusList)
                     {
@@ -997,7 +1003,7 @@ namespace BfresLibrary.Switch.Core
             if (ska.BoneAnims.Count > 0)
             {
                 Align(8);
-                if (ResFile.VersionMajor2 >= 9)
+                if (ResFile.VersionMajor >= 9)
                     SaveRelocateEntryToSection(Position, 3, (uint)ska.BoneAnims.Count, 4, Section1, "Bone Animation");
                 else
                     SaveRelocateEntryToSection(Position, 3, (uint)ska.BoneAnims.Count, 2, Section1, "Bone Animation");
@@ -1390,7 +1396,7 @@ namespace BfresLibrary.Switch.Core
 
         private void WriteMaterials(Material mat)
         {
-            if (this.ResFile.VersionMajor2 >= 10)
+            if (this.ResFile.VersionMajor >= 10)
             {
                 SaveEntries();
 

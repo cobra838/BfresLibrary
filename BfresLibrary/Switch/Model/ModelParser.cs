@@ -13,7 +13,7 @@ namespace BfresLibrary.Switch
     {
         internal static void Read(ResFileSwitchLoader loader, Model model)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
                 model.Flags = loader.ReadUInt32();
             else
                 loader.LoadHeaderBlock();
@@ -23,7 +23,7 @@ namespace BfresLibrary.Switch
             model.Skeleton = loader.Load<Skeleton>();
             long VertexArrayOffset = loader.ReadOffset();
             model.Shapes = loader.LoadDictValues<Shape>();
-            if (loader.ResFile.VersionMajor2 == 9)
+            if (loader.ResFile.VersionMajor == 9)
             {
                 long materialValuesOffset = loader.ReadOffset();
                 long off = loader.ReadOffset(); //padding?
@@ -38,7 +38,7 @@ namespace BfresLibrary.Switch
                 long materialValuesOffset = loader.ReadOffset();
                 long materialDictOffset = loader.ReadOffset();
                 model.Materials = loader.LoadDictValues<Material>(materialDictOffset, materialValuesOffset);
-                if (loader.ResFile.VersionMajor2 >= 10)
+                if (loader.ResFile.VersionMajor >= 10)
                     loader.ReadOffset(); //shader assign offset
             }
 
@@ -49,7 +49,7 @@ namespace BfresLibrary.Switch
             ushort numMaterial = loader.ReadUInt16();
 
             ushort numUserData = 0;
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 loader.ReadUInt16(); //shader assign count
                 numUserData = loader.ReadUInt16();
@@ -69,7 +69,7 @@ namespace BfresLibrary.Switch
         public static void Write(ResFileSwitchSaver saver, Model model)
         {
             //Add all shader assign that is bindable
-            if (saver.ResFile.VersionMajor2 >= 10)
+            if (saver.ResFile.VersionMajor >= 10)
             {
                 foreach (var mat in model.Materials.Values)
                     MaterialParserV10.PrepareSave(mat);
@@ -87,12 +87,12 @@ namespace BfresLibrary.Switch
                 }
             }
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.Write(model.Flags);
             else
                 saver.SaveHeaderBlock();
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.SaveRelocateEntryToSection(saver.Position, 11, 1, 0, ResFileSwitchSaver.Section1, "Model");
             else
                 saver.SaveRelocateEntryToSection(saver.Position, 10, 1, 0, ResFileSwitchSaver.Section1, "Model");
@@ -105,12 +105,12 @@ namespace BfresLibrary.Switch
             model.ShapeDictOffset = saver.SaveOffset();
             model.MaterialsOffset = saver.SaveOffset();
 
-            if (saver.ResFile.VersionMajor2 == 9)
+            if (saver.ResFile.VersionMajor == 9)
                 saver.Write((ulong)0);
 
             model.MaterialsDictOffset = saver.SaveOffset();
 
-            if (saver.ResFile.VersionMajor2 >= 10)
+            if (saver.ResFile.VersionMajor >= 10)
                 saver.SaveList(model.ShaderAssign);
 
             model.PosUserDataOffset = saver.SaveOffset();
@@ -119,7 +119,7 @@ namespace BfresLibrary.Switch
             saver.Write((ushort)model.VertexBuffers.Count);
             saver.Write((ushort)model.Shapes.Count);
             saver.Write((ushort)model.Materials.Count);
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write((ushort)model.ShaderAssign.Count);
                 saver.Write((ushort)model.UserData.Count);

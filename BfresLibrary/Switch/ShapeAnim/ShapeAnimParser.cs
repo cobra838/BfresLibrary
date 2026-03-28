@@ -12,7 +12,7 @@ namespace BfresLibrary.Switch
     {
         internal static void Read(ResFileSwitchLoader loader, ShapeAnim shapeAnim)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
                 shapeAnim.Flags = (ShapeAnimFlags)loader.ReadUInt32();
             else
                 loader.LoadHeaderBlock();
@@ -23,7 +23,7 @@ namespace BfresLibrary.Switch
             uint BindIndicesOffset = loader.ReadOffset();
             uint VertexShapeAnimsArrayOffset = loader.ReadOffset();
             shapeAnim.UserData = loader.LoadDictValues<UserData>();
-            if (loader.ResFile.VersionMajor2 < 9)
+            if (loader.ResFile.VersionMajor < 9)
                 shapeAnim.Flags = (ShapeAnimFlags)loader.ReadInt16();
             ushort numUserData = loader.ReadUInt16();
             ushort numVertexShapeAnim = loader.ReadUInt16();
@@ -38,7 +38,7 @@ namespace BfresLibrary.Switch
 
         public static void Write(ResFileSwitchSaver saver, ShapeAnim shapeAnim)
         {
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.Write((uint)shapeAnim.Flags);
             else
                 saver.SaveHeaderBlock();

@@ -15,7 +15,7 @@ namespace BfresLibrary.Switch
     {
         public static void Read(ResFileSwitchLoader loader, Shape shape)
         {
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
                 shape.Flags = loader.ReadEnum<ShapeFlags>(false);
             else
                 loader.LoadHeaderBlock();
@@ -27,7 +27,7 @@ namespace BfresLibrary.Switch
             shape.KeyShapes = loader.LoadDictValues<KeyShape>();
             long BoundingBoxArrayOffset = loader.ReadOffset();
             long RadiusOffset = 0;
-            if (loader.ResFile.VersionMajor2 > 2 || loader.ResFile.VersionMajor > 0)
+            if (loader.ResFile.VersionMajor > 2)
             {
                 RadiusOffset = loader.ReadOffset();
                 long UserPointer = loader.ReadInt64();
@@ -37,7 +37,7 @@ namespace BfresLibrary.Switch
                 long UserPointer = loader.ReadInt64();
                 shape.RadiusArray.Add(loader.ReadSingle());
             }
-            if (loader.ResFile.VersionMajor2 < 9)
+            if (loader.ResFile.VersionMajor < 9)
                 shape.Flags = loader.ReadEnum<ShapeFlags>(true);
             ushort idx = loader.ReadUInt16();
             shape.MaterialIndex = loader.ReadUInt16();
@@ -48,9 +48,9 @@ namespace BfresLibrary.Switch
             byte numMesh = loader.ReadByte();
             byte numKeys = loader.ReadByte();
             shape.TargetAttribCount = loader.ReadByte();
-            if (loader.ResFile.VersionMajor2 <= 2 && loader.ResFile.VersionMajor == 0)
+            if (loader.ResFile.VersionMajor <= 2)
                 loader.Seek(2); //padding
-            else if (loader.ResFile.VersionMajor2 >= 9)
+            else if (loader.ResFile.VersionMajor >= 9)
                 loader.Seek(2); //padding
             else
                 loader.Seek(6); //padding
@@ -60,7 +60,7 @@ namespace BfresLibrary.Switch
             {
                 using (loader.TemporarySeek(RadiusOffset, SeekOrigin.Begin))
                 {
-                    if (loader.ResFile.VersionMajor2 >= 10)
+                    if (loader.ResFile.VersionMajor >= 10)
                     {
                         //A offset + radius size. Can be per mesh or per bone if there is skinning used.
                         int numBoundings = numSkinBoneIndex == 0 ? numMesh : numSkinBoneIndex;
@@ -87,7 +87,7 @@ namespace BfresLibrary.Switch
 
         public static void Write(ResFileSwitchSaver saver, Shape shape)
         {
-            if (saver.ResFile.VersionMajor2 >= 10)
+            if (saver.ResFile.VersionMajor >= 10)
             {
                 int numBoundings = shape.SkinBoneIndices.Count == 0 ? shape.Meshes.Count : shape.SkinBoneIndices.Count;
                 //Regenerate if list is off
@@ -99,7 +99,7 @@ namespace BfresLibrary.Switch
                 }
             }
 
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
                 saver.Write(shape.Flags, true);
             else
                 saver.Seek(12);
@@ -139,7 +139,7 @@ namespace BfresLibrary.Switch
             shape.PosSubMeshBoundingsOffset = saver.SaveOffset();
             shape.PosRadiusArrayOffset = saver.SaveOffset();
             saver.Write(0L); //padding
-            if (saver.ResFile.VersionMajor2 < 9)
+            if (saver.ResFile.VersionMajor < 9)
                 saver.Write(shape.Flags, true);
             saver.Write((ushort)saver.CurrentIndex);
             saver.Write(shape.MaterialIndex);
@@ -151,7 +151,7 @@ namespace BfresLibrary.Switch
             saver.Write((byte)shape.KeyShapes.Count);
             saver.Write(shape.TargetAttribCount);
 
-             if (saver.ResFile.VersionMajor2 >= 9)
+             if (saver.ResFile.VersionMajor >= 9)
                 saver.Seek(2); //padding
             else
                 saver.Seek(6); //padding

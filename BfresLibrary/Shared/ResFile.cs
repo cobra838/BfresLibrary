@@ -6,6 +6,7 @@ using Syroot.BinaryData;
 using BfresLibrary.Core;
 using System.ComponentModel;
 using Syroot.NintenTools.NSW.Bntx;
+using System;
 
 namespace BfresLibrary
 {
@@ -24,7 +25,7 @@ namespace BfresLibrary
         /// <summary>
         /// Initializes a new instance of the <see cref="ResFile"/> class.
         /// </summary>
-        public ResFile()
+        public ResFile(bool isSwitch = false)
         {
             Name = "";
             DataAlignment = 8192;
@@ -33,6 +34,18 @@ namespace BfresLibrary
             VersionMajor2 = 4;
             VersionMinor = 0;
             VersionMinor2 = 4;
+
+            //Order to set the target data
+            this.ByteOrder = isSwitch ? ByteOrder.LittleEndian : ByteOrder.BigEndian;
+            IsPlatformSwitch = isSwitch;
+
+            if (isSwitch)
+            {
+                DataAlignment = 8192;
+                VersionMajor = 5;
+                VersionMinor = 0;
+                VersionMinor2 = 3;
+            }
         }
 
         /// <summary>
@@ -121,7 +134,10 @@ namespace BfresLibrary
 
         internal uint SaveVersion()
         {
-            return VersionMajor << 24 | VersionMajor2 << 16 | VersionMinor << 8 | VersionMinor2;
+            if (this.IsPlatformSwitch)
+                return VersionMajor << 16 | VersionMinor << 8 | VersionMinor2;
+            else
+                return VersionMajor << 24 | VersionMajor2 << 16 | VersionMinor << 8 | VersionMinor2;
         }
 
 
@@ -235,9 +251,8 @@ namespace BfresLibrary
                 return $"{VersionMajor},{VersionMajor2},{VersionMinor},{VersionMinor2}";
             }
         }
-
         /// <summary>
-        /// Gets or sets the major revision of the BFRES structure formats.
+        /// Gets or sets the second major revision of the BFRES structure formats.
         /// </summary>
         [Browsable(true)]
         [Category("Version")]
@@ -350,10 +365,19 @@ namespace BfresLibrary
 
         internal void SetVersionInfo(uint Version)
         {
-            VersionMajor = Version >> 24;
-            VersionMajor2 = Version >> 16 & 0xFF;
-            VersionMinor = Version >> 8 & 0xFF;
-            VersionMinor2 = Version & 0xFF;
+            if (this.IsPlatformSwitch)
+            {
+                VersionMajor = Version >> 16 & 0xFFFF;
+                VersionMinor = Version >> 8 & 0xFF;
+                VersionMinor2 = Version & 0xFF;
+            }
+            else
+            {
+                VersionMajor = Version >> 24;
+                VersionMajor2 = Version >> 16 & 0xFF;
+                VersionMinor = Version >> 8 & 0xFF;
+                VersionMinor2 = Version & 0xFF;
+            }
         }
 
         // ---- ENUMS ------------------------------------------------------------------------------------------------

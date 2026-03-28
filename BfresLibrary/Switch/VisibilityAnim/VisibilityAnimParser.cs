@@ -14,7 +14,7 @@ namespace BfresLibrary.Switch
         public static void Read(ResFileSwitchLoader loader, VisibilityAnim visibilityAnim)
         {
             loader.CheckSignature("FBVS");
-            if (loader.ResFile.VersionMajor2 >= 9)
+            if (loader.ResFile.VersionMajor >= 9)
             {
                 visibilityAnim._flags = loader.ReadUInt16();
                 loader.ReadUInt16(); //Padding
@@ -30,7 +30,7 @@ namespace BfresLibrary.Switch
             long NameArrayOffset = loader.ReadInt64();
             visibilityAnim.UserData = loader.LoadDictValues<UserData>();
 
-            if (loader.ResFile.VersionMajor2 < 9)
+            if (loader.ResFile.VersionMajor < 9)
                 visibilityAnim._flags = loader.ReadUInt16();
             else
                 loader.ReadUInt16(); //Idk what this is
@@ -54,7 +54,7 @@ namespace BfresLibrary.Switch
         public static void Write(ResFileSwitchSaver saver, VisibilityAnim visibilityAnim)
         {
             saver.WriteSignature("FBVS");
-            if (saver.ResFile.VersionMajor2 >= 9)
+            if (saver.ResFile.VersionMajor >= 9)
             {
                 saver.Write(visibilityAnim._flags);
                 saver.Write((ushort)0);
@@ -71,7 +71,7 @@ namespace BfresLibrary.Switch
             visibilityAnim.PosNamesOffset = saver.SaveOffset();
             visibilityAnim.PosUserDataOffset = saver.SaveOffset();
             visibilityAnim.PosUserDataDictOffset = saver.SaveOffset();
-            if (saver.ResFile.VersionMajor2 < 9)
+            if (saver.ResFile.VersionMajor < 9)
                 saver.Write(visibilityAnim._flags);
             else
                 saver.Write((ushort)0);
