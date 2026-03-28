@@ -1,14 +1,16 @@
-﻿using System;
-using System.Diagnostics;
+﻿using BfresLibrary.Core;
+using Newtonsoft.Json;
 using Syroot.Maths;
+using System;
 using System.Collections.Generic;
-using BfresLibrary.Core;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.ComponentModel;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace BfresLibrary
 {
@@ -428,6 +430,33 @@ namespace BfresLibrary
             NotifyPropertyChanged(nameof(TransformCumulativeIdentity));
         }
 
+        public void Import(string FileName, ResFile ResFile)
+        {
+            string ext = Path.GetExtension(FileName);
+            if (ext == ".json")
+            {
+                var bone = JsonConvert.DeserializeObject<Bone>(File.ReadAllText(FileName));
+
+
+            }
+            else
+                ResFileLoader.ImportSection(FileName, this, ResFile);
+        }
+
+        public void Export(string FileName, ResFile ResFile)
+        {
+            var model = ResFile.Models[0];
+
+            string ext = Path.GetExtension(FileName);
+            if (ext == ".json")
+            {
+                var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+                File.WriteAllText(FileName, json);
+            }
+            else
+                ResFileSaver.ExportSection(FileName, this, ResFile);
+        }
+
         // ---- METHODS ------------------------------------------------------------------------------------------------
 
         void IResData.Load(ResFileLoader loader)
@@ -436,9 +465,9 @@ namespace BfresLibrary
             {
                 Name = loader.LoadString();
                 UserData = loader.LoadDictValues<UserData>();
-                if (loader.ResFile.VersionMajor2 > 9)
+                if (loader.ResFile.VersionMajor > 9)
                     loader.Seek(8);
-                if (loader.ResFile.VersionMajor2 == 8 || loader.ResFile.VersionMajor2 == 9)
+                if (loader.ResFile.VersionMajor == 8 || loader.ResFile.VersionMajor == 9)
                     loader.Seek(16);
 
                 ushort idx = loader.ReadUInt16();
@@ -480,9 +509,9 @@ namespace BfresLibrary
                 saver.SaveString(Name);
                 PosUserDataOffset = saver.SaveOffset();
                 PosUserDataDictOffset = saver.SaveOffset();
-                if (saver.ResFile.VersionMajor2 > 9)
+                if (saver.ResFile.VersionMajor > 9)
                     saver.Seek(8);
-                else if (saver.ResFile.VersionMajor2 == 8 || saver.ResFile.VersionMajor2 == 9)
+                else if (saver.ResFile.VersionMajor == 8 || saver.ResFile.VersionMajor == 9)
                     saver.Seek(16);
 
                 saver.Write((ushort)saver.CurrentIndex);

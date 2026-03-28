@@ -82,6 +82,31 @@ namespace BfresLibrary
         /// </summary>
         public IList<MaterialParserV10.ShaderAssignV10> ShaderAssign = new List<MaterialParserV10.ShaderAssignV10>();
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DisplayName("Vertex Buffer Count")]
+        public int VertexBufferCount => this.VertexBuffers.Count;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DisplayName("Shapes Count")]
+        public int ShapesCount => this.Shapes.Count;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DisplayName("Materials Count")]
+        public int MaterialsCount => this.Materials.Count;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DisplayName("UserData Count")]
+        public int UserDataCount => this.UserData.Count;
+
         /// <summary>
         /// Gets the total number of vertices to process when drawing this model.
         /// </summary>

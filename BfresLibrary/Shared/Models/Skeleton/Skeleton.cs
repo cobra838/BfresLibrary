@@ -81,30 +81,24 @@ namespace BfresLibrary
 
         public IList<ushort> GetSmoothIndices()
         {
-            List<ushort> indices = new List<ushort>();
-            foreach (Bone bone in Bones.Values)
-            {
-                if (bone.SmoothMatrixIndex != -1)
-                    indices.Add((ushort)bone.SmoothMatrixIndex);
-            }
+            List<ushort> indices = new();
+            for (int i = 0; i < this.NumSmoothMatrices; i++)
+                indices.Add(this.MatrixToBoneList[i]);
             return indices;
         }
 
         public IList<ushort> GetRigidIndices()
         {
-            List<ushort> indices = new List<ushort>();
-            foreach (Bone bone in Bones.Values)
-            {
-                if (bone.RigidMatrixIndex != -1)
-                    indices.Add((ushort)bone.RigidMatrixIndex);
-            }
+            List<ushort> indices = new();
+            for (int i = 0; i < this.NumRigidMatrices; i++)
+                indices.Add(this.MatrixToBoneList[i + this.NumSmoothMatrices]);
             return indices;
         }
 
         public ushort NumSmoothMatrices { get; private set; }
         public ushort NumRigidMatrices { get; private set; }
 
-        public ushort[] userIndices;
+        public ushort[] MirroredBoneIndices;
 
         // ---- METHODS ------------------------------------------------------------------------------------------------
 
@@ -113,7 +107,7 @@ namespace BfresLibrary
             loader.CheckSignature(_signature);
             if (loader.IsSwitch)
             {
-                if (loader.ResFile.VersionMajor2 >= 9)
+                if (loader.ResFile.VersionMajor >= 9)
                     _flags = loader.ReadUInt32();
                 else
                     ((Switch.Core.ResFileSwitchLoader)loader).LoadHeaderBlock();
@@ -124,22 +118,22 @@ namespace BfresLibrary
 
                 uint MatrixToBoneListOffset = loader.ReadOffset();
                 uint InverseModelMatricesOffset = loader.ReadOffset();
-
-                if (loader.ResFile.VersionMajor2 == 8)
-                    loader.Seek(16);
-                if (loader.ResFile.VersionMajor2 >= 9)
-                    loader.Seek(8);
-
                 long userPointer = loader.ReadInt64();
-                if (loader.ResFile.VersionMajor2 < 9)
+                long mirrorTablePointer = 0;
+
+                if (loader.ResFile.VersionMajor == 8)
+                    loader.Seek(16);
+                if (loader.ResFile.VersionMajor >= 9)
+                    mirrorTablePointer = loader.ReadInt64();
+
+                if (loader.ResFile.VersionMajor < 9)
                     _flags = loader.ReadUInt32();
                 ushort numBone = loader.ReadUInt16();
                 NumSmoothMatrices = loader.ReadUInt16();
                 NumRigidMatrices = loader.ReadUInt16();
                 loader.Seek(6);
 
-                //MPS
-                userIndices = loader.LoadCustom(() => loader.ReadUInt16s(numBone), (uint)userPointer);
+                MirroredBoneIndices = loader.LoadCustom(() => loader.ReadUInt16s(numBone), (uint)mirrorTablePointer);
 
                 MatrixToBoneList = loader.LoadCustom(() => loader.ReadUInt16s((NumSmoothMatrices + NumRigidMatrices)), MatrixToBoneListOffset);
                 InverseModelMatrices = loader.LoadCustom(() => loader.ReadMatrix3x4s(NumSmoothMatrices), InverseModelMatricesOffset)?.ToList();
@@ -148,14 +142,14 @@ namespace BfresLibrary
             {
                 _flags = loader.ReadUInt32();
                 ushort numBone = loader.ReadUInt16();
-                ushort numSmoothMatrix = loader.ReadUInt16();
-                ushort numRigidMatrix = loader.ReadUInt16();
+                NumSmoothMatrices = loader.ReadUInt16();
+                NumRigidMatrices = loader.ReadUInt16();
                 loader.Seek(2);
                 Bones = loader.LoadDict<Bone>();
                 uint ofsBoneList = loader.ReadOffset(); // Only load dict.
-                MatrixToBoneList = loader.LoadCustom(() => loader.ReadUInt16s((numSmoothMatrix + numRigidMatrix)));
+                MatrixToBoneList = loader.LoadCustom(() => loader.ReadUInt16s((NumSmoothMatrices + NumRigidMatrices)));
                 if (loader.ResFile.Version >= 0x03040000)
-                    InverseModelMatrices = loader.LoadCustom(() => loader.ReadMatrix3x4s(numSmoothMatrix))?.ToList();
+                    InverseModelMatrices = loader.LoadCustom(() => loader.ReadMatrix3x4s(NumRigidMatrices))?.ToList();
                 uint userPointer = loader.ReadUInt32();
             }
         }
@@ -170,7 +164,7 @@ namespace BfresLibrary
             saver.WriteSignature(_signature);
             if (saver.IsSwitch)
             {
-                if (saver.ResFile.VersionMajor2 >= 9)
+                if (saver.ResFile.VersionMajor >= 9)
                     saver.Write(_flags);
                 else
                     ((Switch.Core.ResFileSwitchSaver)saver).SaveHeaderBlock();
@@ -180,22 +174,22 @@ namespace BfresLibrary
                 PosBoneArrayOffset = saver.SaveOffset();
                 PosMatrixToBoneListOffset = saver.SaveOffset();
                 PosInverseModelMatricesOffset = saver.SaveOffset();
-                if (saver.ResFile.VersionMajor2 == 8)
+                if (saver.ResFile.VersionMajor == 8)
                     saver.Seek(16);
-                if (saver.ResFile.VersionMajor2 >= 9)
+                if (saver.ResFile.VersionMajor >= 9)
                     saver.Seek(8);
 
                 ((Switch.Core.ResFileSwitchSaver)saver).SaveRelocateEntryToSection(saver.Position, 1, 1, 0, Switch.Core.ResFileSwitchSaver.Section1, "FSKL UserPointer");
-                PosUserPointer = saver.SaveOffset();// UserPointer
+                PosMirroredIndexTablePointer = saver.SaveOffset();// UserPointer
 
-                if (saver.ResFile.VersionMajor2 < 9)
+                if (saver.ResFile.VersionMajor < 9)
                     saver.Write(_flags);
 
                 saver.Write((ushort)Bones.Count);
                 saver.Write((ushort)InverseModelMatrices.Count); // NumSmoothMatrix
                 saver.Write((ushort)(MatrixToBoneList.Count - InverseModelMatrices.Count)); // NumRigidMatrix
 
-                if (saver.ResFile.VersionMajor2 >= 9)
+                if (saver.ResFile.VersionMajor >= 9)
                     saver.Seek(2);
                 else
                     saver.Seek(6);
@@ -239,7 +233,7 @@ namespace BfresLibrary
         internal long PosBoneArrayOffset;
         internal long PosMatrixToBoneListOffset;
         internal long PosInverseModelMatricesOffset;
-        internal long PosUserPointer;
+        internal long PosMirroredIndexTablePointer;
     }
 
     public enum SkeletonFlagsScaling : uint
